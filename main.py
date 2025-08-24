@@ -14,63 +14,36 @@ def school_add(a, b, base):
         res.append(str(carry))
     return strip_leading_zeros(''.join(res[::-1]))
 
-def school_sub(a, b, base):
-    a, b = a[::-1], b[::-1]
-    res, borrow = [], 0
-    for i in range(len(a)):
-        da = int(a[i])
-        db = int(b[i]) if i < len(b) else 0
-        d = da - db - borrow
-        if d < 0:
-            d += base
-            borrow = 1
-        else:
-            borrow = 0
-        res.append(str(d))
-    return strip_leading_zeros(''.join(res[::-1]))
+def to_base(n, base):
+    if n == 0:
+        return "0"
+    digits = []
+    while n > 0:
+        digits.append(str(n % base))
+        n //= base
+    return ''.join(reversed(digits))
 
-def school_mul(a, b, base):
-    a, b = a[::-1], b[::-1]
-    res = [0] * (len(a) + len(b))
-    for i in range(len(a)):
-        for j in range(len(b)):
-            res[i+j] += int(a[i]) * int(b[j])
-            res[i+j+1] += res[i+j] // base
-            res[i+j] %= base
-    return strip_leading_zeros(''.join(map(str, res[::-1])))
-
-def pad_zero(s, n):
-    return s + "0"*n
+def from_base(s, base):
+    n = 0
+    for ch in s:
+        n = n * base + int(ch)
+    return n
 
 def karatsuba(x, y, base):
-    x, y = strip_leading_zeros(x), strip_leading_zeros(y)
-    if len(x) == 1 and len(y) == 1:
-        return str(int(x) * int(y))
+    xi, yi = from_base(x, base), from_base(y, base)
+    return to_base(karatsuba_int(xi, yi), base)
 
-    n = max(len(x), len(y))
-    if n % 2 == 1:
-        n += 1
-    x = x.zfill(n)
-    y = y.zfill(n)
+def karatsuba_int(x, y):
+    if x < 10 or y < 10:
+        return x * y
+    n = max(len(str(x)), len(str(y)))
     m = n // 2
-
-    x_high, x_low = x[:-m], x[-m:]
-    y_high, y_low = y[:-m], y[-m:]
-
-    z0 = karatsuba(x_low, y_low, base)
-    z2 = karatsuba(x_high, y_high, base)
-    sum_x = school_add(x_low, x_high, base)
-    sum_y = school_add(y_low, y_high, base)
-    z1 = karatsuba(sum_x, sum_y, base)
-
-    temp = school_sub(z1, z2, base)
-    mid = school_sub(temp, z0, base)
-
-    res = school_add(
-        school_add(pad_zero(z2, 2*m), pad_zero(mid, m), base),
-        z0, base
-    )
-    return strip_leading_zeros(res)
+    high1, low1 = divmod(x, 10**m)
+    high2, low2 = divmod(y, 10**m)
+    z0 = karatsuba_int(low1, low2)
+    z1 = karatsuba_int(low1 + high1, low2 + high2)
+    z2 = karatsuba_int(high1, high2)
+    return z2 * 10**(2*m) + (z1 - z2 - z0) * 10**m + z0
 
 def main():
     I1, I2, B = input().strip().split()
