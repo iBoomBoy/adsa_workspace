@@ -26,16 +26,16 @@ public:
 
     int search(const string &key) {
         int start = hashFunc(key);
-        int idx = start;
+        int index = start;
         while (true) {
-            if (table[idx].status == 'N') {
+            if (table[index].status == 'N') {
                 return -1;
             }
-            if (table[idx].status == 'O' && table[idx].key == key) {
-                return idx;
+            if (table[index].status == 'O' && table[index].key == key) {
+                return index;
             }
-            idx = (idx + 1) % 26;
-            if (idx == start) return -1;
+            index = (index + 1) % 26;
+            if (index == start) return -1;
         }
     }
 
@@ -43,14 +43,14 @@ public:
         if (search(key) != -1) return;
 
         int start = hashFunc(key);
-        int idx = start;
+        int index = start;
         while (true) {
-            if (table[idx].status == 'N' || table[idx].status == 'T') {
-                table[idx].key = key;
-                table[idx].status = 'O';
+            if (table[index].status == 'N' || table[index].status == 'T') {
+                table[index].key = key;
+                table[index].status = 'O';
                 return;
             }
-            idx = (idx + 1) % 26;
+            index = (index + 1) % 26;
         }
     }
 
